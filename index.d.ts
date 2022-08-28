@@ -5,6 +5,14 @@
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.2
 
+type RedomLifeCycle = 'onmount' | 'onunmount' | 'onremount';
+type RedomSVG = Omit<SVGAElement, 'className' | 'addEventListener' | 'removeEventListener'>;
+interface RedomComponentEl extends HTMLElement, RedomSVG, RedomComponent {
+    __redom_mounted: boolean;
+    __redom_lifecycle: Record<RedomLifeCycle, number>;
+    __redom_view: Record<string, any>;
+}
+
 export type RedomElement = Node | RedomComponent;
 export type RedomQuery = string | RedomElement;
 export type RedomMiddleware = (el: HTMLElement | SVGElement) => void;
@@ -13,7 +21,7 @@ export type RedomQueryArgument = RedomQueryArgumentValue | RedomQueryArgumentVal
 export type RedomElQuery = string | Node | RedomComponentCreator;
 
 export interface RedomComponent {
-    el: HTMLElement | SVGElement | RedomComponent;
+    el: RedomComponentEl;
 
     update?(item: any, index: number, data: any, context?: any): void;
 
@@ -164,6 +172,8 @@ export function setAttr(view: RedomElement, arg1: string | object, arg2?: string
 export function setStyle(view: RedomElement, arg1: string | object, arg2?: string): void;
 
 export function setChildren(parent: RedomElement, children: RedomElement[]): void;
+
+export function setData(view: RedomElement, arg1: string | object, arg2?: string): void;
 
 export function svg(query: RedomQuery, ...args: RedomQueryArgument[]): SVGElement;
 export function s(query: RedomQuery, ...args: RedomQueryArgument[]): SVGElement;
