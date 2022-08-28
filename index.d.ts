@@ -5,14 +5,7 @@
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.2
 
-type RedomLifeCycle = 'onmount' | 'onunmount' | 'onremount';
-type RedomSVG = Omit<SVGAElement, 'className' | 'addEventListener' | 'removeEventListener'>;
-interface RedomComponentEl extends HTMLElement, RedomSVG, RedomComponent {
-    __redom_mounted: boolean;
-    __redom_lifecycle: Record<RedomLifeCycle, number>;
-    __redom_view: Record<string, any>;
-}
-
+export type RedomLifecycle = 'onmount' | 'onunmount' | 'onremount';
 export type RedomElement = Node | RedomComponent;
 export type RedomQuery = string | RedomElement;
 export type RedomMiddleware = (el: HTMLElement | SVGElement) => void;
@@ -20,10 +13,16 @@ export type RedomQueryArgumentValue = RedomElement | string | number | { [key: s
 export type RedomQueryArgument = RedomQueryArgumentValue | RedomQueryArgumentValue[];
 export type RedomElQuery = string | Node | RedomComponentCreator;
 
-export interface RedomComponent {
-    el: RedomComponentEl;
+export interface RedomEl extends HTMLElement, RedomComponent {
+    __redom_mounted: boolean;
+    __redom_lifecycle: Record<RedomLifecycle, number>;
+    __redom_view: Record<string, any>;
+}
 
-    update?(item: any, index: number, data: any, context?: any): void;
+export interface RedomComponent {
+    el: RedomEl;
+
+    update?(item: any, index?: number, data?: any, context?: any): void;
 
     onmount?(): void;
 
@@ -47,7 +46,7 @@ export class ListPool {
 }
 
 export class List implements RedomComponent {
-    el: HTMLElement | SVGElement;
+    el: RedomEl;
 
     constructor(parent: RedomQuery, View: RedomComponentCreator, key?: string, initData?: any);
 
@@ -63,7 +62,7 @@ export class List implements RedomComponent {
 }
 
 export class Place implements RedomComponent {
-    el: HTMLElement | SVGElement;
+    el: RedomEl;
 
     constructor(View: RedomComponentConstructor, initData?: any);
 
@@ -71,7 +70,7 @@ export class Place implements RedomComponent {
 }
 
 export class Router implements RedomComponent {
-    el: HTMLElement | SVGElement;
+    el: RedomEl;
 
     constructor(parent: RedomQuery, Views: RouterDictionary, initData?: any);
 
