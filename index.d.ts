@@ -13,6 +13,10 @@ export type RedomQueryArgumentValue = RedomElement | string | number | { [key: s
 export type RedomQueryArgument = RedomQueryArgumentValue | RedomQueryArgumentValue[];
 export type RedomElQuery = string | Node | RedomComponentCreator;
 
+export type RedomProps<T extends Record<string, any>> = {
+    this?: string;
+} & T;
+
 export interface RedomEl extends HTMLElement, RedomComponent {
     __redom_mounted: boolean;
     __redom_lifecycle: Record<RedomLifecycle, number>;
