@@ -5,7 +5,8 @@ import { setChildren } from './setchildren.js';
 export function Fragment (attr, ...children) {
   const fragment = document.createDocumentFragment();
   setChildren(fragment, children);
-  return fragment;
+  this.el = fragment;
+  return this.el;
 }
 
 export function html (query, ...args) {

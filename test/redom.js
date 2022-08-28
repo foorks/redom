@@ -444,7 +444,8 @@ function Fragment (attr) {
 
   var fragment = document.createDocumentFragment();
   setChildren(fragment, children);
-  return fragment;
+  this.el = fragment;
+  return this.el;
 }
 
 function html (query) {
