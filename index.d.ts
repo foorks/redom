@@ -157,7 +157,7 @@ type RedomElementOfElQuery<Q extends RedomElQuery> =
     never
 
 export function html<Q extends RedomElQuery>(query: Q, ...args: RedomQueryArgument[]): RedomElementOfElQuery<Q>;
-export function h<Q extends RedomElQuery>(query: Q, ...args: RedomQueryArgument[]): RedomElementOfElQuery<Q>;
+// export function h<Q extends RedomElQuery>(query: Q, ...args: RedomQueryArgument[]): RedomElementOfElQuery<Q>;
 export function el<Q extends RedomElQuery>(query: Q, ...args: RedomQueryArgument[]): RedomElementOfElQuery<Q>;
 
 export function listPool(View: RedomComponentConstructor, key?: string, initData?: any): ListPool;
@@ -191,7 +191,7 @@ export namespace svg {
     function extend(query: RedomQuery): RedomComponentConstructor;
 }
 
-export function Fragment(): JSX.Element;
+// export function Fragment(): JSX.Element;
 
 // JSX
 
