@@ -377,38 +377,6 @@ function isNode (arg) {
   return arg && arg.nodeType;
 }
 
-function html (query) {
-  var args = [], len = arguments.length - 1;
-  while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
-
-  var element;
-
-  var type = typeof query;
-
-  if (type === 'string') {
-    element = createElement(query);
-  } else if (type === 'function') {
-    var Query = query;
-    element = new (Function.prototype.bind.apply( Query, [ null ].concat( args) ));
-  } else {
-    throw new Error('At least one argument required');
-  }
-
-  parseArgumentsInternal(getEl(element), args, true);
-
-  return element;
-}
-
-var el = html;
-var h = html;
-
-html.extend = function extendHtml () {
-  var args = [], len = arguments.length;
-  while ( len-- ) args[ len ] = arguments[ len ];
-
-  return html.bind.apply(html, [ this ].concat( args ));
-};
-
 function setChildren (parent) {
   var children = [], len = arguments.length - 1;
   while ( len-- > 0 ) children[ len ] = arguments[ len + 1 ];
@@ -469,6 +437,47 @@ function traverse (parent, children, _current) {
 
   return current;
 }
+
+function Fragment (attr) {
+  var children = [], len = arguments.length - 1;
+  while ( len-- > 0 ) children[ len ] = arguments[ len + 1 ];
+
+  var fragment = document.createDocumentFragment();
+  setChildren(fragment, children);
+  return fragment;
+}
+
+function html (query) {
+  var args = [], len = arguments.length - 1;
+  while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
+
+  var element;
+
+  var type = typeof query;
+
+  if (type === 'string') {
+    element = createElement(query);
+  } else if (type === 'function') {
+    var Query = query;
+    element = new (Function.prototype.bind.apply( Query, [ null ].concat( args) ));
+  } else {
+    throw new Error('At least one argument required');
+  }
+
+  parseArgumentsInternal(getEl(element), args, true);
+
+  return element;
+}
+
+var el = html;
+var h = html;
+
+html.extend = function extendHtml () {
+  var args = [], len = arguments.length;
+  while ( len-- ) args[ len ] = arguments[ len ];
+
+  return html.bind.apply(html, [ this ].concat( args ));
+};
 
 function listPool (View, key, initData) {
   return new ListPool(View, key, initData);
@@ -726,6 +735,7 @@ svg.extend = function extendSvg () {
 
 svg.ns = ns;
 
+exports.Fragment = Fragment;
 exports.List = List;
 exports.ListPool = ListPool;
 exports.Place = Place;

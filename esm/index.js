@@ -1,4 +1,4 @@
-export { el, h, html } from './html.js';
+export { el, h, html, Fragment } from './html.js';
 export { list, List } from './list.js';
 export { listPool, ListPool } from './listpool.js';
 export { mount } from './mount.js';

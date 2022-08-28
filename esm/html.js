@@ -1,5 +1,12 @@
 import { createElement } from './create-element.js';
 import { parseArgumentsInternal, getEl } from './util.js';
+import { setChildren } from './setchildren.js';
+
+export function Fragment (attr, ...children) {
+  const fragment = document.createDocumentFragment();
+  setChildren(fragment, children);
+  return fragment;
+}
 
 export function html (query, ...args) {
   let element;

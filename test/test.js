@@ -15,7 +15,7 @@ document.createElement = function (tagName) {
 };
 
 module.exports = function (redom) {
-  var { el, html, list, listPool, place, router, svg, mount, unmount, setChildren, setAttr, setStyle, setXlink, setData, text } = redom;
+  var { el, html, list, listPool, place, router, svg, mount, unmount, setChildren, setAttr, setStyle, setXlink, setData, text, Fragment } = redom;
 
   test('exports utils', function (t) {
     t.plan(2);
@@ -117,6 +117,20 @@ module.exports = function (redom) {
         el('h1', 'Hello world!')
       );
       t.equals(app.outerHTML, '<app><h1>Hello world!</h1></app>');
+    });
+    test('with Fragment', function (t) {
+      t.plan(1);
+
+      function A () {
+        this.hello = el('p', 'hello');
+        this.world = el('p', 'world');
+        this.el = new Fragment({}, this.hello, this.world);
+      }
+
+      var a = new A();
+      var outerHTML = Array.from(a.el.children).map((el) => el.outerHTML).join('');
+
+      t.equals(outerHTML, '<p>hello</p><p>world</p>');
     });
     t.test('child views', function (t) {
       t.plan(1);
