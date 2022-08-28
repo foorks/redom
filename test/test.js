@@ -990,4 +990,24 @@ module.exports = function (redom) {
 
     t.equals(remounts, 1);
   });
+
+  test('element has mounted', function (t) {
+    t.plan(2);
+
+    var div = document.createElement('div');
+    document.body.appendChild(div);
+
+    function A () {
+      this.el = el('h1', 'mounted');
+      this.onmount = function () {};
+    }
+
+    var a = new A();
+
+    mount(div, a);
+    t.equals(a.el.__redom_mounted, true);
+
+    unmount(div, a);
+    t.equals(a.el.__redom_mounted, false);
+  });
 };
