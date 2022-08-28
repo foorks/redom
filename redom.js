@@ -1,35 +1,11 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
-  (global = global || self, factory(global.redom = {}));
-}(this, (function (exports) { 'use strict';
-
-  function parseQuery (query) {
-    var chunks = query.split(/([#.])/);
-    var tagName = '';
-    var id = '';
-    var classNames = [];
-
-    for (var i = 0; i < chunks.length; i++) {
-      var chunk = chunks[i];
-      if (chunk === '#') {
-        id = chunks[++i];
-      } else if (chunk === '.') {
-        classNames.push(chunks[++i]);
-      } else if (chunk.length) {
-        tagName = chunk;
-      }
-    }
-
-    return {
-      tag: tagName || 'div',
-      id: id,
-      className: classNames.join(' ')
-    };
-  }
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.redom = {}));
+})(this, (function (exports) { 'use strict';
 
   function createElement (query, ns) {
-    var ref = parseQuery(query);
+    var ref = parse(query);
     var tag = ref.tag;
     var id = ref.id;
     var className = ref.className;
@@ -48,6 +24,29 @@
     }
 
     return element;
+  }
+
+  function parse (query) {
+    var chunks = query.split(/([.#])/);
+    var className = '';
+    var id = '';
+
+    for (var i = 1; i < chunks.length; i += 2) {
+      switch (chunks[i]) {
+        case '.':
+          className += " " + (chunks[i + 1]);
+          break;
+
+        case '#':
+          id = chunks[i + 1];
+      }
+    }
+
+    return {
+      className: className.trim(),
+      tag: chunks[0] || 'div',
+      id: id
+    };
   }
 
   function unmount (parent, child) {
@@ -138,7 +137,13 @@
 
     if (before != null) {
       if (replace) {
-        parentEl.replaceChild(childEl, getEl(before));
+        var beforeEl = getEl(before);
+
+        if (beforeEl.__redom_mounted) {
+          trigger(before.el, 'onunmount');
+        }
+
+        parentEl.replaceChild(childEl, beforeEl);
       } else {
         parentEl.insertBefore(childEl, getEl(before));
       }
@@ -257,11 +262,7 @@
   }
 
   function setStyleValue (el, key, value) {
-    if (value == null) {
-      el.style[key] = '';
-    } else {
-      el.style[key] = value;
-    }
+    el.style[key] = value == null ? '' : value;
   }
 
   /* global SVGElement */
@@ -378,48 +379,6 @@
     return arg && arg.nodeType;
   }
 
-  var htmlCache = {};
-
-  function html (query) {
-    var args = [], len = arguments.length - 1;
-    while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
-
-    var element;
-
-    var type = typeof query;
-
-    if (type === 'string') {
-      element = memoizeHTML(query).cloneNode(false);
-    } else if (isNode(query)) {
-      element = query.cloneNode(false);
-    } else if (type === 'function') {
-      var Query = query;
-      element = new (Function.prototype.bind.apply( Query, [ null ].concat( args) ));
-    } else {
-      throw new Error('At least one argument required');
-    }
-
-    parseArgumentsInternal(getEl(element), args, true);
-
-    return element;
-  }
-
-  var el = html;
-  var h = html;
-
-  html.extend = function extendHtml (query) {
-    var args = [], len = arguments.length - 1;
-    while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
-
-    var clone = memoizeHTML(query);
-
-    return html.bind.apply(html, [ this, clone ].concat( args ));
-  };
-
-  function memoizeHTML (query) {
-    return htmlCache[query] || (htmlCache[query] = createElement(query));
-  }
-
   function setChildren (parent) {
     var children = [], len = arguments.length - 1;
     while ( len-- > 0 ) children[ len ] = arguments[ len + 1 ];
@@ -439,7 +398,7 @@
   function traverse (parent, children, _current) {
     var current = _current;
 
-    var childEls = new Array(children.length);
+    var childEls = Array(children.length);
 
     for (var i = 0; i < children.length; i++) {
       childEls[i] = children[i] && getEl(children[i]);
@@ -481,6 +440,48 @@
     return current;
   }
 
+  function Fragment (attr) {
+    var children = [], len = arguments.length - 1;
+    while ( len-- > 0 ) children[ len ] = arguments[ len + 1 ];
+
+    var fragment = document.createDocumentFragment();
+    setChildren(fragment, children);
+    this.el = fragment;
+    return this.el;
+  }
+
+  function html (query) {
+    var args = [], len = arguments.length - 1;
+    while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
+
+    var element;
+
+    var type = typeof query;
+
+    if (type === 'string') {
+      element = createElement(query);
+    } else if (type === 'function') {
+      var Query = query;
+      element = new (Function.prototype.bind.apply( Query, [ null ].concat( args) ));
+    } else {
+      throw new Error('At least one argument required');
+    }
+
+    parseArgumentsInternal(getEl(element), args, true);
+
+    return element;
+  }
+
+  var el = html;
+  var h = html;
+
+  html.extend = function extendHtml () {
+    var args = [], len = arguments.length;
+    while ( len-- ) args[ len ] = arguments[ len ];
+
+    return html.bind.apply(html, [ this ].concat( args ));
+  };
+
   function listPool (View, key, initData) {
     return new ListPool(View, key, initData);
   }
@@ -508,7 +509,7 @@
     var oldLookup = this.lookup;
     var newLookup = {};
 
-    var newViews = new Array(data.length);
+    var newViews = Array(data.length);
     var oldViews = this.views;
 
     for (var i = 0; i < data.length; i++) {
@@ -704,8 +705,6 @@
 
   var ns = 'http://www.w3.org/2000/svg';
 
-  var svgCache = {};
-
   function svg (query) {
     var args = [], len = arguments.length - 1;
     while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
@@ -715,9 +714,7 @@
     var type = typeof query;
 
     if (type === 'string') {
-      element = memoizeSVG(query).cloneNode(false);
-    } else if (isNode(query)) {
-      element = query.cloneNode(false);
+      element = createElement(query, ns);
     } else if (type === 'function') {
       var Query = query;
       element = new (Function.prototype.bind.apply( Query, [ null ].concat( args) ));
@@ -732,18 +729,16 @@
 
   var s = svg;
 
-  svg.extend = function extendSvg (query) {
-    var clone = memoizeSVG(query);
+  svg.extend = function extendSvg () {
+    var args = [], len = arguments.length;
+    while ( len-- ) args[ len ] = arguments[ len ];
 
-    return svg.bind(this, clone);
+    return svg.bind.apply(svg, [ this ].concat( args ));
   };
 
   svg.ns = ns;
 
-  function memoizeSVG (query) {
-    return svgCache[query] || (svgCache[query] = createElement(query, ns));
-  }
-
+  exports.Fragment = Fragment;
   exports.List = List;
   exports.ListPool = ListPool;
   exports.Place = Place;
@@ -768,4 +763,4 @@
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
-})));
+}));
