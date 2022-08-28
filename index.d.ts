@@ -181,7 +181,7 @@ export function setData(view: RedomElement, arg1: string | object, arg2?: string
 export function svg(query: RedomQuery, ...args: RedomQueryArgument[]): SVGElement;
 export function s(query: RedomQuery, ...args: RedomQueryArgument[]): SVGElement;
 
-export function text(str: string): Text;
+// export function text(str: string): Text;
 
 export namespace list {
     function extend(parent: RedomQuery, View: RedomComponentConstructor, key?: string, initData?: any): RedomComponentConstructor;
