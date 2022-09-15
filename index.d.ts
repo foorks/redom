@@ -197,8 +197,7 @@ export namespace svg {
 
 export declare global {
     export declare namespace JSX {
-        export type Element = RedomElement;
-        export interface HTMLElement { };
+        export type Element = HTMLElement;
         export interface IntrinsicElements {
             [tag: string]: BaseProps;
         }
